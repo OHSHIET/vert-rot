@@ -9,11 +9,8 @@ passage = omp.Passage()
 mth = omp.Math()
 
 
-class Main():
-    def gui(self, initial_state):
-
-        def state_checker(val, name):
-            return val if not initial_state or not initial_state[f'{name}:'] else initial_state[f'{name}:']
+class Main:
+    def __new__(self, initial_state):
 
         # Time and Mode
         Time = 0.0
@@ -34,7 +31,7 @@ class Main():
 
         # Ship Data
         # Name - Bulk carrier 20
-        displacement_tonnage = state_checker(135000.000, "Displacement tonnage")  # mass, t
+        displacement_tonnage = initial_state['Displacement tonnage'] # mass, t
         # 28725.2 # mass, t
         mass = CNV_TONN2KG * displacement_tonnage  # kg
         Ixx = 2.187382163e+010  # kg/m^2
@@ -45,9 +42,9 @@ class Main():
         Rzz = math.sqrt(Izz / mass)  # print('\nRzz', Rzz)
 
         # Initial State
-        X_0 = state_checker(0.0, "X")  # m
-        Y_0 = state_checker(0.0, "Y")  # m
-        Z_0 = state_checker(0.0, "Z")  # m
+        X_0 = initial_state['X'] # m
+        Y_0 = initial_state['Y'] # m
+        Z_0 = initial_state['Z'] # m
 
         location = np.array([X_0, Y_0, Z_0], dtype='float64')
         #print('\nLOCATION', LOCATION, LOCATION.dtype, LOCATION.shape, LOCATION.size, LOCATION.data)
@@ -493,10 +490,6 @@ class Main():
         # HDG_ANGLE, deg
 
         return fig
-
-
-if __name__ == "__main__":
-    Main().gui({})
     
     
 """

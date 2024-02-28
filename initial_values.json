@@ -1,0 +1,75 @@
+{
+    "helpers": {
+        "max_string_len": 63
+    },
+    "vals": {
+        "Displacement tonnage": {
+            "initial": 135000.0,
+            "type": {
+                "num": true,
+                "string": false,
+                "mass": true,
+                "length": false
+            },
+            "range": {
+                "greater_than": 0,
+                "less_than": null
+            },
+            "disable": {
+                "field": false,
+                "long_strings": false
+            }
+        },
+        "X": {
+            "initial": 0.0,
+            "type": {
+                "num": true,
+                "string": false,
+                "mass": false,
+                "length": true
+            },
+            "range": {
+                "greater_than": null,
+                "less_than": null
+            },
+            "disable": {
+                "field": false,
+                "long_strings": false
+            }
+        },
+        "Y": {
+            "initial": 0.0,
+            "type": {
+                "num": true,
+                "string": false,
+                "mass": false,
+                "length": true
+            },
+            "range": {
+                "greater_than": null,
+                "less_than": null
+            },
+            "disable": {
+                "field": false,
+                "long_strings": false
+            }
+        },
+        "Z": {
+            "initial": 0.0,
+            "type": {
+                "num": true,
+                "string": false,
+                "mass": false,
+                "length": true
+            },
+            "range": {
+                "greater_than": null,
+                "less_than": null
+            },
+            "disable": {
+                "field": false,
+                "long_strings": false
+            }
+        }
+    }
+}
