@@ -70,6 +70,23 @@
                 "field": false,
                 "long_strings": false
             }
+        },
+        "Name": {
+            "initial": "Default name",
+            "type": {
+                "num": false,
+                "string": true,
+                "mass": false,
+                "length": false
+            },
+            "range": {
+                "greater_than": null,
+                "less_than": null
+            },
+            "disable": {
+                "field": false,
+                "long_strings": true
+            }
         }
     }
 }

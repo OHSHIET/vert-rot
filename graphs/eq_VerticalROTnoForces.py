@@ -2,7 +2,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import omp
+from . import omp
 
 orient = omp.Orient()
 passage = omp.Passage()
@@ -11,6 +11,8 @@ mth = omp.Math()
 
 class Main:
     def __new__(self, initial_state):
+        filepath = 'graphs/eq_VerticalROTnoForces.txt'
+        converted = 'converted'
 
         # Time and Mode
         Time = 0.0
@@ -31,7 +33,7 @@ class Main:
 
         # Ship Data
         # Name - Bulk carrier 20
-        displacement_tonnage = initial_state['Displacement tonnage'] # mass, t
+        displacement_tonnage = initial_state['Displacement tonnage'][converted] # mass, t
         # 28725.2 # mass, t
         mass = CNV_TONN2KG * displacement_tonnage  # kg
         Ixx = 2.187382163e+010  # kg/m^2
@@ -42,9 +44,9 @@ class Main:
         Rzz = math.sqrt(Izz / mass)  # print('\nRzz', Rzz)
 
         # Initial State
-        X_0 = initial_state['X'] # m
-        Y_0 = initial_state['Y'] # m
-        Z_0 = initial_state['Z'] # m
+        X_0 = initial_state['X'][converted] # m
+        Y_0 = initial_state['Y'][converted] # m
+        Z_0 = initial_state['Z'][converted] # m
 
         location = np.array([X_0, Y_0, Z_0], dtype='float64')
         #print('\nLOCATION', LOCATION, LOCATION.dtype, LOCATION.shape, LOCATION.size, LOCATION.data)
@@ -470,7 +472,7 @@ class Main:
         #np.savetxt('myfile.txt', (Time, HDG_ANGLE / CNV_DEG2RAD), fmt='%.18g', delimiter=' ', newline=os.linesep)
         #np.savetxt('myfile.txt', [Time, HDG_ANGLE / CNV_DEG2RAD], fmt='%.18g', delimiter=' ')
         #np.savetxt('myfile1.txt', str('np.transpose([time, HDG_ANGLE ])'))
-        np.savetxt('eq_VerticalROTnoForces.txt', np.transpose([time, mx, my, I_MX_BODY, I_MY_BODY, I_MZ_BODY, aax_BODY, aay_BODY, aaz_BODY, Roll_AVEL / CNV_DEG2RAD, Pitch_AVEL / CNV_DEG2RAD, HDG_AVEL / CNV_DEG2RAD, Roll_ANGLE / CNV_DEG2RAD, Pitch_ANGLE / CNV_DEG2RAD, HDG_ANGLE / CNV_DEG2RAD]))
+        np.savetxt(filepath, np.transpose([time, mx, my, I_MX_BODY, I_MY_BODY, I_MZ_BODY, aax_BODY, aay_BODY, aaz_BODY, Roll_AVEL / CNV_DEG2RAD, Pitch_AVEL / CNV_DEG2RAD, HDG_AVEL / CNV_DEG2RAD, Roll_ANGLE / CNV_DEG2RAD, Pitch_ANGLE / CNV_DEG2RAD, HDG_ANGLE / CNV_DEG2RAD]))
         #np.savetxt('myfile1.txt', [time, HDG_ANGLE ])
 
         # time, s
