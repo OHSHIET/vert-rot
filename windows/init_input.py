@@ -1,19 +1,20 @@
 import sys
 import json
-from collections import OrderedDict
 
-import pint
 import PyQt5.QtWidgets as qtw
 from PyQt5.QtCore import pyqtSignal, Qt
 
 from globals import Global
+from global_ureg import ureg
+from windows.global_windows import G_Windows
 
 class InputDialog(qtw.QDialog):
     input_submitted = pyqtSignal(dict)
 
     def __init__(self):
         super().__init__()
-        self.GV = Global
+        self.G = Global
+        self.GW = G_Windows
 
         self.setWindowTitle("Initial state")
         self.setGeometry(250, 200, 500, 250)
@@ -27,33 +28,15 @@ class InputDialog(qtw.QDialog):
         with open('initial_values.json', 'r') as init_file:
             self.json_data = json.load(init_file)
             self.initial_values = self.json_data['vals']
-            
-        # also change the dict in show_init_vals when adding new measurements
-        # !!! make this more convenient to change
-        self.length = OrderedDict({
-            "Meters": self.GV.ureg.metre,
-            "Kilometers": self.GV.ureg.kilometre,
-            "Inches": self.GV.ureg.inch,
-            "Feet": self.GV.ureg.foot,
-            "Yards": self.GV.ureg.yard,
-            "Miles": self.GV.ureg.mile
-        })
-        self.mass = OrderedDict({
-            "Grams": self.GV.ureg.gram,
-            "Kilograms": self.GV.ureg.kilogram,
-            "Tonnes": self.GV.ureg.tonne,
-            "Ounces": self.GV.ureg.ounce,
-            "Pounds": self.GV.ureg.pound
-        })
 
         self.length_dropdown = qtw.QComboBox()
         self.mass_dropdown = qtw.QComboBox()
 
-        self.init_dropdown(self.length_dropdown, self.length, self.GV.DEFAULT_LENGTH)
-        self.init_dropdown(self.mass_dropdown, self.mass, self.GV.DEFAULT_MASS)
+        self.init_dropdown(self.length_dropdown, self.GW.LENGTH, self.G.DEFAULT_LENGTH)
+        self.init_dropdown(self.mass_dropdown, self.GW.MASS, self.G.DEFAULT_MASS)
 
-        self.current_length = self.length[self.length_dropdown.currentText()]
-        self.current_mass = self.mass[self.mass_dropdown.currentText()]
+        self.G.current_length = self.GW.LENGTH[self.length_dropdown.currentText()]
+        self.G.current_mass = self.GW.MASS[self.mass_dropdown.currentText()]
 
         self.length_dropdown.activated.connect(self.length_change)
         self.mass_dropdown.activated.connect(self.mass_change)
@@ -77,21 +60,82 @@ class InputDialog(qtw.QDialog):
         submit_button = qtw.QPushButton("Set initial state")
         submit_button.clicked.connect(self.submit_input)
 
+        load_state_button = qtw.QPushButton("Load initial state")
+        load_state_button.clicked.connect(self.load_initial_state)
+
+        main_layout.addWidget(load_state_button)
         main_layout.addLayout(dropdown_layout)
         main_layout.addLayout(input_layout)
         main_layout.addWidget(submit_button)
 
         self.setLayout(main_layout)
 
+    def load_initial_state(self):
+        file_name, _ = qtw.QFileDialog.getOpenFileName(self, "Open .json file with initial state", "", "JSON Files (*.json)")
+        error_box = qtw.QMessageBox()
+
+        if not file_name:
+            return
+
+        with open(file_name, 'r') as file:
+            try:
+                save = json.load(file)
+                version = save['version']
+                version_err_msg = f'<br /><br />Save file version: <b>{version}</b>. Program version: <b>{self.G.VERSION}</b>.'
+
+                saved_length = save['measurements']['length']
+                saved_mass = save['measurements']['mass']
+                is_length_same = ureg.Quantity(1, saved_length) == 1 * self.G.current_length
+                is_mass_same = ureg.Quantity(1, saved_mass) == 1 * self.G.current_mass
+
+                if save['filetype'] != self.G.SAVEFILE_TYPE:
+                    error_box.setWindowTitle("Error")
+                    error_box.setIcon(qtw.QMessageBox.Critical)
+                    error_box.setText("The loaded .json file is not of the correct format.")
+                    error_box.exec_()
+                    return
+                
+                unrecognized_values = []
+
+                for key, value in save['data'].items():
+                    try:
+                        self.inputs[key].setText(str(value))
+                    
+                    # if "key" fails the execution will continue here
+                    except KeyError as err:
+                        unrecognized_values.append(f'<b>{err}</b>')
+                        continue
+
+                if len(unrecognized_values) != 0:
+                    error_box.setWindowTitle("Warning")
+                    error_box.setIcon(qtw.QMessageBox.Warning)
+                    error_box.setText(f"The following fields: {', '.join(unrecognized_values)} were skipped, since they were not recognized as initial value.<br /><br />Either they are not part of the program's state anymore, or the save data was edited manually.{version_err_msg}")
+                    error_box.exec_()
+
+                # if mass and length preferred measurements differ from current, change dropdown menus chosen items                
+                if not is_length_same:
+                    self.G.current_length = self.GW.load_file_change_dropdown(self.GW.LENGTH, saved_length, self.length_dropdown)
+                if not is_mass_same:
+                    self.G.current_mass = self.GW.load_file_change_dropdown(self.GW.MASS, saved_mass, self.mass_dropdown)
+
+            except (json.JSONDecodeError, KeyError) as err:
+                print(f'Error reading JSON: {err}')
+                error_box.setWindowTitle("Error")
+                error_box.setIcon(qtw.QMessageBox.Critical)
+                error_box.setText(f"An error occurred while reading the JSON file: <b>{err}</b>.{version_err_msg}")
+                error_box.exec_()
+
+        return
+
     def length_change(self, chosen_index):
         """
             chosen_index corresponds for index of the chosen option in the dropdown
             sets current_length/mass to current dropdown in pint representation
         """
-        self.current_length = self.measurement_change(self.length_dropdown, self.length, self.current_length, 'length')
-    
+        self.G.current_length = self.measurement_change(self.length_dropdown, self.GW.LENGTH, self.G.current_length, 'length')
+
     def mass_change(self, chosen_index):
-        self.current_mass = self.measurement_change(self.mass_dropdown, self.mass, self.current_mass, 'mass')
+        self.G.current_mass = self.measurement_change(self.mass_dropdown, self.GW.MASS, self.G.current_mass, 'mass')
 
     def measurement_change(self, dropdown, measurement_arr, current_measurement, type):
         """
@@ -152,6 +196,11 @@ class InputDialog(qtw.QDialog):
         """
         initial_state = {}
         bad_inputs = [] # user's inputs that didnt pass the tests and we need to warn the user about it
+        
+        len_mass_map = { # for values and measurements conversion
+            'length': (self.G.current_length, self.G.DEFAULT_LENGTH),
+            'mass': (self.G.current_mass, self.G.DEFAULT_MASS)
+        }
 
         for key, value in self.inputs.items():
             input = value.text()
@@ -169,9 +218,9 @@ class InputDialog(qtw.QDialog):
                     try:
                         placeholder = float(placeholder)
                         if datatype['length']:
-                            placeholder *= self.current_length
+                            placeholder *= self.G.current_length
                         elif datatype['mass']:
-                            placeholder *= self.current_mass
+                            placeholder *= self.G.current_mass
                     except ValueError:
                         pass
                     finally:
@@ -203,17 +252,14 @@ class InputDialog(qtw.QDialog):
                         continue
 
                 # if user is submitting input values not in tonnes and meters, convert the values back
-                if datatype['length']:
-                    current_state['inputted'] = input * self.current_length
-                    if self.current_length != self.GV.DEFAULT_LENGTH:
-                        input *= self.current_length
-                        input = input.to(self.GV.DEFAULT_LENGTH).magnitude
-                
-                elif datatype['mass']:
-                    current_state['inputted'] = input * self.current_mass
-                    if self.current_length != self.GV.DEFAULT_MASS:
-                        input *= self.current_mass
-                        input = input.to(self.GV.DEFAULT_MASS).magnitude
+                for key, value in len_mass_map.items():
+                    if datatype[key]:
+                        (current_measurement, default_measurement) = len_mass_map[key]
+                        current_state['inputted'] = input * current_measurement
+                        if current_measurement != default_measurement:
+                            input *= current_measurement
+                            input = input.to(default_measurement).magnitude
+                        break
 
                 current_state['converted'] = input
 
@@ -221,7 +267,7 @@ class InputDialog(qtw.QDialog):
             qtw.QMessageBox.warning(self, "Error", '<br />'.join(bad_inputs))
             return False
         
-        self.GV.initial_state = initial_state
+        self.G.initial_state = initial_state
         print("\n---- INPUT DATA ----:\n", initial_state)
         self.input_submitted.emit(initial_state)
         self.accept()

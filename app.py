@@ -52,24 +52,21 @@ class MainWindow(qtw.QMainWindow):
         main_layout.addWidget(plot_widget)
 
     def save_initial_state(self):
-        data = {
-            "type": GV.SAVEFILE_TYPE,
-            "time_saved": str(datetime.now()),
-            "measurements": { # used to determine whether default measurements stayed the same
-                "length": str(GV.DEFAULT_LENGTH),
-                "mass": str(GV.DEFAULT_MASS)
-            },
-            "data": { }
-        }
-
         for key, value in initial_state.items():
-            data['data'][key] = value['converted']
+            val = value['inputted']
+            G.savedata['data'][key] = val if isinstance(val, str) else val.magnitude
+
+        G.savedata['measurements']['length'] = str(G.current_length)
+        G.savedata['measurements']['mass'] = str(G.current_mass)
+        G.savedata['time_saved'] = str(datetime.now())
 
         file_path, _ = qtw.QFileDialog.getSaveFileName(self, "Save your initial state", "", "JSON Files (*.json)")
 
         if file_path:
             with open(file_path, "w") as file:
-                json.dump(data, file, indent=4)
+                json.dump(G.savedata, file, indent=4)
+            
+        G.savedata['data'] = { }
 
     def show_initial_state(self):
         self.new_window = InitialValuesWindow(self)
@@ -84,11 +81,11 @@ class MainWindow(qtw.QMainWindow):
 
 if __name__ == '__main__':
     app = qtw.QApplication(sys.argv)
-    GV = Global
+    G = Global
     input_dialog = InputDialog()
 
     initial_state = {}
-    input_dialog.input_submitted.connect(lambda data: setattr(sys.modules[__name__], 'initial_state', GV.handle_initial_data(data)))
+    input_dialog.input_submitted.connect(lambda data: setattr(sys.modules[__name__], 'initial_state', G.handle_initial_data(data)))
     input_dialog.exec_()
 
     plot_widget = PlotWidget()
