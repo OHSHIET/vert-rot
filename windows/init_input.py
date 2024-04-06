@@ -5,7 +5,7 @@ import PyQt5.QtWidgets as qtw
 from PyQt5.QtCore import pyqtSignal, Qt
 
 from globals import Global
-from global_ureg import ureg
+from global_g import ureg
 from windows.global_windows import G_Windows
 
 class InputDialog(qtw.QDialog):
@@ -27,31 +27,28 @@ class InputDialog(qtw.QDialog):
 
         with open('initial_values.json', 'r') as init_file:
             self.json_data = json.load(init_file)
-            self.initial_values = self.json_data['vals']
+            self.GW.initial_values = self.json_data['vals']
 
-        self.length_dropdown = qtw.QComboBox()
-        self.mass_dropdown = qtw.QComboBox()
+        self.init_dropdown(self.GW.length_dropdown, self.GW.LENGTH, self.G.DEFAULT_LENGTH)
+        self.init_dropdown(self.GW.mass_dropdown, self.GW.MASS, self.G.DEFAULT_MASS)
 
-        self.init_dropdown(self.length_dropdown, self.GW.LENGTH, self.G.DEFAULT_LENGTH)
-        self.init_dropdown(self.mass_dropdown, self.GW.MASS, self.G.DEFAULT_MASS)
+        self.G.current_length = self.GW.LENGTH[self.GW.length_dropdown.currentText()]
+        self.G.current_mass = self.GW.MASS[self.GW.mass_dropdown.currentText()]
 
-        self.G.current_length = self.GW.LENGTH[self.length_dropdown.currentText()]
-        self.G.current_mass = self.GW.MASS[self.mass_dropdown.currentText()]
+        self.GW.length_dropdown.activated.connect(self.length_change)
+        self.GW.mass_dropdown.activated.connect(self.mass_change)
 
-        self.length_dropdown.activated.connect(self.length_change)
-        self.mass_dropdown.activated.connect(self.mass_change)
-
-        dropdown_layout.addWidget(self.length_dropdown, 0, 0)
-        dropdown_layout.addWidget(self.mass_dropdown, 0, 1)
+        dropdown_layout.addWidget(self.GW.length_dropdown, 0, 0)
+        dropdown_layout.addWidget(self.GW.mass_dropdown, 0, 1)
 
         self.inputs = {}
-        for index, val in enumerate(self.initial_values):
-            if self.initial_values[val]['disable']['field']:
+        for index, val in enumerate(self.GW.initial_values):
+            if self.GW.initial_values[val]['disable']['field']:
                 continue
             input_layout.addWidget(qtw.QLabel(val + ':'), index, 0)
             self.inputs[val] = qtw.QLineEdit()
 
-            initial_val = self.initial_values[val]['initial']
+            initial_val = self.GW.initial_values[val]['initial']
             if initial_val != None:
                 self.inputs[val].setPlaceholderText(str(initial_val))
 
@@ -114,9 +111,9 @@ class InputDialog(qtw.QDialog):
 
                 # if mass and length preferred measurements differ from current, change dropdown menus chosen items                
                 if not is_length_same:
-                    self.G.current_length = self.GW.load_file_change_dropdown(self.GW.LENGTH, saved_length, self.length_dropdown)
+                    self.G.current_length = self.GW.load_file_change_dropdown(self.GW.LENGTH, saved_length, self.GW.length_dropdown)
                 if not is_mass_same:
-                    self.G.current_mass = self.GW.load_file_change_dropdown(self.GW.MASS, saved_mass, self.mass_dropdown)
+                    self.G.current_mass = self.GW.load_file_change_dropdown(self.GW.MASS, saved_mass, self.GW.mass_dropdown)
 
             except (json.JSONDecodeError, KeyError) as err:
                 print(f'Error reading JSON: {err}')
@@ -132,10 +129,10 @@ class InputDialog(qtw.QDialog):
             chosen_index corresponds for index of the chosen option in the dropdown
             sets current_length/mass to current dropdown in pint representation
         """
-        self.G.current_length = self.measurement_change(self.length_dropdown, self.GW.LENGTH, self.G.current_length, 'length')
+        self.G.current_length = self.measurement_change(self.GW.length_dropdown, self.GW.LENGTH, self.G.current_length, 'length')
 
     def mass_change(self, chosen_index):
-        self.G.current_mass = self.measurement_change(self.mass_dropdown, self.GW.MASS, self.G.current_mass, 'mass')
+        self.G.current_mass = self.measurement_change(self.GW.mass_dropdown, self.GW.MASS, self.G.current_mass, 'mass')
 
     def measurement_change(self, dropdown, measurement_arr, current_measurement, type):
         """
@@ -144,7 +141,7 @@ class InputDialog(qtw.QDialog):
         selected_option = measurement_arr[dropdown.currentText()]
 
         for key, value in self.inputs.items():
-            datatype = self.initial_values[key]['type']
+            datatype = self.GW.initial_values[key]['type']
 
             input = value.text()
             placeholder = None
@@ -173,8 +170,9 @@ class InputDialog(qtw.QDialog):
 
     def init_dropdown(self, dropdown, measurement_arr, default_dropdown):
         """
+            first initialization of dropdowns
             adds text to mass and length dropdowns.
-            automatically sets default chosen dropdown based on the default_dropdown value
+            sets default dropdown based on the default_dropdown value (DEFAULT_LENGTH, DEFAULT_MASS)
         """
         counter = 0
         for measurement_str, measurement in measurement_arr.items():
@@ -206,7 +204,7 @@ class InputDialog(qtw.QDialog):
             input = value.text()
             initial_state[key] = {}
             current_state = initial_state[key]
-            initial_key = self.initial_values[key]
+            initial_key = self.GW.initial_values[key]
             datatype = initial_key['type']
 
             if len(input) == 0:

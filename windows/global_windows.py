@@ -1,6 +1,8 @@
 from collections import OrderedDict
 
-from global_ureg import ureg
+from PyQt5.QtWidgets import QComboBox
+
+from global_g import ureg, global_app
 
 class G_Windows:
     # since pint for some reason doesnt provide readable measurements...
@@ -35,6 +37,11 @@ class G_Windows:
         "ounce": "oz",
         "pound": "ld"
     }
+
+    initial_values = None
+
+    length_dropdown = QComboBox()
+    mass_dropdown = QComboBox()
 
     def load_file_change_dropdown(MEASUREMENT_ARR, preferred_measurement, measurement_dropdown):
         for index, (_key, value) in enumerate(MEASUREMENT_ARR.items()):

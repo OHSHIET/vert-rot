@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from global_ureg import ureg
+from global_g import ureg
 
 class Global:
     # string used to determine whether a .json file is the app's savefile

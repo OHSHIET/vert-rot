@@ -8,7 +8,9 @@ import PyQt5.QtWidgets as qtw
 from graphs.eq_VerticalROTnoForces import Main
 from windows.init_input import InputDialog
 from windows.show_init_vals import InitialValuesWindow
+
 from globals import Global
+from global_g import global_app
 
 class PlotWidget(qtw.QWidget):
     def __init__(self):
@@ -80,7 +82,7 @@ class MainWindow(qtw.QMainWindow):
 
 
 if __name__ == '__main__':
-    app = qtw.QApplication(sys.argv)
+    app = global_app
     G = Global
     input_dialog = InputDialog()
 
