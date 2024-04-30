@@ -2,14 +2,16 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+
 from . import omp
+from .clickable_plot import ClickablePlot
 
 orient = omp.Orient()
 passage = omp.Passage()
 mth = omp.Math()
 
 
-class Main:
+class Graphs:
     def __new__(self, initial_state):
         filepath = 'graphs/eq_VerticalROTnoForces.txt'
         converted = 'converted'
@@ -357,111 +359,128 @@ class Main:
         #print('\nACC_BODY', ACC_BODY)
 
         # graphs
-        fig, axs = plt.subplots(nrows=4, ncols=4)
+        plots = [
+            [
+                {
+                    'firstPlot': mx,
+                    'secondPlot': mx0,
+                    'ylabel': "Mx, N*m",
+                    'title': 'Mx(t), N*m',
+                },
+                {
+                    'firstPlot': my,
+                    'secondPlot': my0,
+                    'ylabel': "My, N*m",
+                    'title': "My(t), N*m"
+                },
+            ],
+            [
+                {
+                    'firstPlot': mz,
+                    'secondPlot': mz0,
+                    'ylabel': "Mz, N*m",
+                    'title': "Mz(t), N*m"
+                },
+                {
+                    'firstPlot': a,
+                    'secondPlot': None,
+                    'ylabel': "a",
+                    'title': "a"
+                }
+            ],
+            [ # 1
+                { # 0
+                    'firstPlot': I_MX_BODY,
+                    'secondPlot': None,
+                    'ylabel': "I_MX_BODY, N*m",
+                    'title': "I_MX_BODY, N*m"
+                }, # 0
+                { # 1
+                    'firstPlot': I_MY_BODY,
+                    'secondPlot': None,
+                    'ylabel': "I_MY_BODY, N*m",
+                    'title': "I_MY_BODY, N*m"
+                }, # 1
+            ],
+            [
+                { # 2
+                    'firstPlot': I_MZ_BODY,
+                    'secondPlot': None,
+                    'ylabel': "I_MZ_BODY, N*m",
+                    'title': "I_MZ_BODY, N*m"
+                }, # 2
+                { # 3
+                    'firstPlot': aax_BODY,
+                    'secondPlot': None,
+                    'ylabel': "aax_BODY, 1/s^2",
+                    'title': "aax_BODY, 1/s^2"
+                } # 3
+            ],
+            [ # 2
+                { # 0
+                    'firstPlot': aay_BODY,
+                    'secondPlot': None,
+                    'ylabel': "aay_BODY, 1/s^2",
+                    'title': "aay_BODY, 1/s^2"
+                }, # 0
+                { # 1
+                    'firstPlot': aaz_BODY,
+                    'secondPlot': None,
+                    'ylabel': "aaz_BODY, 1/s^2",
+                    'title': "aaz_BODY, 1/s^2"
+                }, # 1
+            ], # 2\
+            [
+                { # 2
+                    'firstPlot': Roll_AVEL / CNV_DEG2RAD,
+                    'secondPlot': None,
+                    'ylabel': "Roll_AVEL, deg",
+                    'title': "Roll_AVEL, deg"
+                }, # 2
+                { # 3
+                    'firstPlot': Pitch_AVEL / CNV_DEG2RAD,
+                    'secondPlot': None,
+                    'ylabel': "Pitch_AVEL, deg",
+                    'title': "Pitch_AVEL, deg"
+                } # 3
+            ],
+            [ # 3
+                { # 0
+                    'firstPlot': HDG_AVEL / CNV_DEG2RAD,
+                    'secondPlot': None,
+                    'ylabel': "HDG_AVEL, deg",
+                    'title': "HDG_AVEL, deg"
+                }, # 0
+                { # 1
+                    'firstPlot': Roll_ANGLE / CNV_DEG2RAD,
+                    'secondPlot': None,
+                    'ylabel': "Roll_ANGLE, deg",
+                    'title': "Roll_ANGLE, deg"
+                }, # 1
+            ], # 3
+            [
+                { # 2
+                    'firstPlot': Pitch_ANGLE / CNV_DEG2RAD,
+                    'secondPlot': None,
+                    'ylabel': "Pitch_ANGLE, deg",
+                    'title': "Pitch_ANGLE, deg"
+                }, # 2
+                { # 3
+                    'firstPlot': HDG_ANGLE / CNV_DEG2RAD,
+                    'secondPlot': None,
+                    'ylabel': "HDG_ANGLE, deg",
+                    'title': "HDG_ANGLE, deg"
+                }, # 3
+            ],
+        ]
 
-        # Plot 1
-        axs[0, 0].plot(time, mx, 'r')
-        axs[0, 0].plot(time, mx0, 'g')
-        axs[0, 0].set_xlabel("Time, s")
-        axs[0, 0].set_ylabel("Mx, N*m")
-        axs[0, 0].set_title('Mx(t), N*m')
+        grid = ClickablePlot()
 
-        # Plot 2
-        axs[0, 1].plot(time, my, 'r')
-        axs[0, 1].plot(time, my0, 'g')
-        axs[0, 1].set_xlabel("Time, s")
-        axs[0, 1].set_ylabel("My, N*m")
-        axs[0, 1].set_title("My(t), N*m")
+        for i, row in enumerate(plots):
+            for j, plot in enumerate(row):
+                grid.new_plot((i, j), time, plot['firstPlot'], plot['secondPlot'], plot['ylabel'], plot['title'])
 
-        # Plot 3
-        axs[0, 2].plot(time, mz, 'r')
-        axs[0, 2].plot(time, mz0, 'g')
-        axs[0, 2].set_xlabel("Time, s")
-        axs[0, 2].set_ylabel("Mz, N*m")
-        axs[0, 2].set_title("Mz(t), N*m")
-
-        # Plot 4
-        axs[0, 3].plot(time, a, 'r')
-        axs[0, 3].set_xlabel("Time, s")
-        axs[0, 3].set_ylabel("a")
-        axs[0, 3].set_title("a")
-
-        # plot 5
-        axs[1, 0].plot(time, I_MX_BODY, 'r')
-        axs[1, 0].set_xlabel("Time, s")
-        axs[1, 0].set_ylabel("I_MX_BODY, N*m")
-        axs[1, 0].set_title("I_MX_BODY, N*m")
-
-        # plot 6
-        axs[1, 1].plot(time, I_MY_BODY, 'r')
-        axs[1, 1].set_xlabel("Time, s")
-        axs[1, 1].set_ylabel("I_MY_BODY, N*m")
-        axs[1, 1].set_title("I_MY_BODY, N*m")
-
-        # plot 7
-        axs[1, 2].plot(time, I_MZ_BODY, 'r')
-        axs[1, 2].set_xlabel("Time, s")
-        axs[1, 2].set_ylabel("I_MZ_BODY, N*m")
-        axs[1, 2].set_title("I_MZ_BODY, N*m")
-
-        # plot 8
-        axs[1, 3].plot(time, aax_BODY, 'r')
-        axs[1, 3].set_xlabel("Time, s")
-        axs[1, 3].set_ylabel("aax_BODY, 1/s^2")
-        axs[1, 3].set_title("aax_BODY, 1/s^2")
-
-        # plot 9
-        axs[2, 0].plot(time, aay_BODY, 'r')
-        axs[2, 0].set_xlabel("Time, s")
-        axs[2, 0].set_ylabel("aay_BODY, 1/s^2")
-        axs[2, 0].set_title("aay_BODY, 1/s^2")
-
-        # plot 10
-        axs[2, 1].plot(time, aaz_BODY, 'r')
-        axs[2, 1].set_xlabel("Time, s")
-        axs[2, 1].set_ylabel("aaz_BODY, 1/s^2")
-        axs[2, 1].set_title("aaz_BODY, 1/s^2")
-
-        # plot 11
-        axs[2, 2].plot(time, Roll_AVEL / CNV_DEG2RAD, 'r')
-        axs[2, 2].set_xlabel("Time, s")
-        axs[2, 2].set_ylabel("Roll_AVEL, deg")
-        axs[2, 2].set_title("Roll_AVEL, deg")
-
-        # plot 12
-        axs[2, 3].plot(time, Pitch_AVEL / CNV_DEG2RAD, 'r')
-        axs[2, 3].set_xlabel("Time, s")
-        axs[2, 3].set_ylabel("Pitch_AVEL, deg")
-        axs[2, 3].set_title("Pitch_AVEL, deg")
-
-        # plot 13
-        axs[3, 0].plot(time, HDG_AVEL / CNV_DEG2RAD, 'r')
-        axs[3, 0].set_xlabel("Time, s")
-        axs[3, 0].set_ylabel("HDG_AVEL, deg")
-        axs[3, 0].set_title("HDG_AVEL, deg")
-
-        # plot 14
-        axs[3, 1].plot(time, Roll_ANGLE / CNV_DEG2RAD, 'r')
-        axs[3, 1].set_xlabel("Time, s")
-        axs[3, 1].set_ylabel("Roll_ANGLE, deg")
-        axs[3, 1].set_title("Roll_ANGLE, deg")
-
-        # plot 15
-        axs[3, 2].plot(time, Pitch_ANGLE / CNV_DEG2RAD, 'r')
-        axs[3, 2].set_xlabel("Time, s")
-        axs[3, 2].set_ylabel("Pitch_ANGLE, deg")
-        axs[3, 2].set_title("Pitch_ANGLE, deg")
-
-        # plot 16
-        axs[3, 3].plot(time, HDG_ANGLE / CNV_DEG2RAD, 'r')
-        axs[3, 3].set_xlabel("Time, s")
-        axs[3, 3].set_ylabel("HDG_ANGLE, deg")
-        axs[3, 3].set_title("HDG_ANGLE, deg")
-
-        plt.grid(True, linestyle='-', color='0.75')
-        plt.tight_layout()
-        if __name__ == "__main__":
-            plt.show()
+        grid.apply_settings()
 
         # # # # # # #
 
@@ -491,7 +510,7 @@ class Main:
         # Pitch_ANGLE, deg
         # HDG_ANGLE, deg
 
-        return fig
+        return grid
     
     
 """

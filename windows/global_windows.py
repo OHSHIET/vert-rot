@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from PyQt5.QtWidgets import QComboBox
+from PyQt5.QtWidgets import QComboBox, QGridLayout, QWidget
 
 from global_g import ureg, global_app
 
@@ -39,6 +39,8 @@ class G_Windows:
     }
 
     initial_values = None
+
+    input_layout = QGridLayout()
 
     length_dropdown = QComboBox()
     mass_dropdown = QComboBox()
