@@ -168,7 +168,6 @@ class init_state_layout:
             return False
         
         self.G.initial_state = initial_state
-        print(self.G.initial_state)
         return initial_state
 
     def length_change(self, chosen_index):

@@ -1,6 +1,7 @@
 import sys
 
 import PyQt5.QtWidgets as qtw
+from PyQt5.QtCore import pyqtSlot
 
 from graphs.eq_VerticalROTnoForces import Graphs
 from windows.init_input import InputDialog
@@ -14,17 +15,31 @@ class Sidebar(qtw.QWidget):
         super().__init__()
         self.sidebar_width_percent = 0.4
 
-        figure = Graphs(initial_state)
+        self.figure = Graphs(G.initial_state)
         layout = qtw.QVBoxLayout(self)
-        layout.addWidget(figure)
-        
-        layout.addWidget(figure)
+        layout.addWidget(self.figure)
         self.setLayout(layout)
+
+    def update_graphs(self, initial_values):
+        """
+            update the graphs when user updates the initial values
+        """
+        # calls the whole file again to redraw
+        self.figure = Graphs(initial_values)
+        layout = self.layout()
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+        layout.addWidget(self.figure)
 
     def get_width_percent(self):
         return self.sidebar_width_percent
 
 class MainWindow(qtw.QMainWindow):
+    @pyqtSlot(dict)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Grid Plot Layout")
@@ -46,6 +61,9 @@ class MainWindow(qtw.QMainWindow):
 
         main_layout.addWidget(self.sidebar)
         main_layout.addWidget(initial_state_button)
+
+        self.input_layout = InitialValuesWindow.get_instance(self)
+        self.input_layout.initial_values_updated.connect(self.sidebar.update_graphs)
 
     def show_initial_state(self):
         new_window = InitialValuesWindow.get_instance(self)
@@ -76,8 +94,7 @@ if __name__ == '__main__':
     G = Global
     input_dialog = InputDialog()
 
-    initial_state = {}
-    input_dialog.input_submitted.connect(lambda data: setattr(sys.modules[__name__], 'initial_state', G.handle_initial_data(data)))
+    input_dialog.input_submitted.connect(lambda data: setattr(sys.modules[__name__], 'G.initial_state', G.handle_initial_data(data)))
     input_dialog.exec_()
 
     main_window = MainWindow()

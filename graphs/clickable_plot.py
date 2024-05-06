@@ -20,10 +20,9 @@ class ClickablePlot(FigureCanvas):
         """
             add new plot to the grid
         """
-        super().__init__(self.fig)
-
         ax = self.fig.add_subplot(self.rows, self.cols, coords[0] * self.cols + coords[1] + 1)
         ax.plot(time, firstPlot, 'r')
+        #ax.plot(firstPlot, 'r')
         if(secondPlot is not None):
             ax.plot(time, secondPlot, 'g')
         ax.set_title(title)

@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 import PyQt5.QtWidgets as qtw
+from PyQt5.QtCore import pyqtSignal
 
 from globals import Global
 from windows.global_windows import G_Windows
@@ -9,6 +10,7 @@ from windows.init_state_layout import init_state_layout
 
 class InitialValuesWindow(qtw.QMainWindow):
     _instance = None
+    initial_values_updated = pyqtSignal(dict)
 
     def __new__(cls, *args, **kwargs):
         """
@@ -57,11 +59,13 @@ class InitialValuesWindow(qtw.QMainWindow):
         main_layout.addLayout(self.init_state.get_layout())
         main_layout.addLayout(buttons_layout)
 
-        #self.setFocus()
-
     def save_input(self):
-        return self.init_state.save_init_state(self)
+        data = self.init_state.save_init_state(self)
+        self.initial_values_updated.emit(self.G.initial_state)
+        """ m = MainWindow()
+        m.show() """
         # redraw the graphs
+        return data
 
     def save_to_file(self):
         if not self.save_input():

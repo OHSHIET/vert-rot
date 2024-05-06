@@ -389,12 +389,13 @@ class Graphs:
                 }
             ],
             [ # 1
-                { # 0
+                
+                {
                     'firstPlot': I_MX_BODY,
                     'secondPlot': None,
-                    'ylabel': "I_MX_BODY, N*m",
-                    'title': "I_MX_BODY, N*m"
-                }, # 0
+                    'ylabel': "I_MX_BODY, Nm",
+                    'title': "I_MX_BODY, Nm"
+                },
                 { # 1
                     'firstPlot': I_MY_BODY,
                     'secondPlot': None,
